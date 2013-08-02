@@ -68,6 +68,17 @@
         </ul>
     </script>
     
+	
+	
+	
+	<script>
+	//global vars
+	var DATADIR;
+	var productList
+	var foldername;
+	var applicationID = "com.outsystems.SimpleHybridApp"
+	</script>
+	
     <script>
         var syncAll = function (){
             this.init = function(){
@@ -288,13 +299,15 @@
                     
                     $.getJSON(this.url, function (data){
 						//console.log(data);
-                        self.categories = $.map(data.Products, function(p){
+                        self.products = $.map(data.Products, function(p){
 							//console.log(p);
                             return{
                                 product: p,
                             };
                         });
-                        saveToStorage('categories', self.categories);
+						productList = self.products;
+						writeToFileSystem('products')
+                        //saveToStorage('products', self.products);
                         self.attachTemplate();
                     });
                 },
@@ -309,6 +322,107 @@
         })();
         
     </script>
+	
+	
+	<!-- FILLESYSTEM THNGS!!!! -->
+	
+	<script>
+	
+		function onError(e){
+			alert("ERROR");
+			//alert(e.target.error.code);
+			//alert(JSON.stringify(e));
+		};
+		function onError_test(e){
+			alert("ERROR TEST");
+		};
+		function onError_test_1(e){
+			alert("ERROR TEST 1");
+		};
+		function onError_test_2(e){
+			alert("ERROR TEST 2");
+		};
+		function onError_test_3(e){
+			alert("ERROR TEST 3");
+		};
+		function onError_test_4(e){
+			alert("ERROR TEST 4");
+		};
+		function onError_test_5(e){
+			alert("ERROR TEST 5");
+		};
+	
+	</script>
+	
+	<script>
+	
+	function writeToFileSystem(folder){
+		//alert('download handler'+issue);
+		foldername = folder;
+		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, null);
+	};
+	
+	function onFSSuccess(fileSystem) {
+		fileSystem.root.getDirectory("Android/data/"+applicationID+"",{create:true, exclusive: false}, function(appID){
+			appID.getDirectory(foldername, {create: true, exclusive: false}, madeDir, onError_test_2)
+		},onError_test_1);
+	};
+	
+	function madeDir(d){
+		//alert('found/made Directory'+'-'+foldername);
+		DATADIR = d;
+		var reader = DATADIR.createReader();
+		reader.readEntries(function(d){
+			//alert('done with dirs'+'-'+foldername);
+			gotFileEntries(d);
+		},onError_test);
+	};
+	
+	function gotFileEntries(fileEntries) {
+    //alert("The dir has "+fileEntries.length+" entries."+'-'+foldername);
+    
+    if (localStorage.downloaded){
+            var str = localStorage.downloaded;
+            var n = str.split(",");
+            var i_string = foldername.toString();
+            var in_array = $.inArray(i_string,n);
+            //alert(in_array);
+            if (in_array > -1){
+                render_issue(foldername);
+            }else{
+                download_issue_files(foldername);
+            };
+        }else{
+            gotFS_write(DATADIR)        
+		};
+};
+
+	// NBNBNBNBNBNNBNBNBNBN need to name the json file accordingle ? mimetype etc...
+	function gotFS_write(DIR) {
+        DIR.getFile("product_list.html", {create: true, exclusive: false}, gotFileEntry_write, onError_test_1);
+    };
+	
+	function gotFileEntry_write(fileEntry) {
+        fileEntry.createWriter(gotFileWriter, onError_test_1);
+    };
+	
+	function gotFileWriter(writer) {
+        writer.onwriteend = function(evt) {
+           
+		   // temporary solution
+		   App.init({
+                template: $('#cateory_template').html(),
+                container: $('#frame'),
+                query: 'get_issue_list'
+            });
+		   
+        };
+        writer.write(productList);
+    };
+	
+	
+	
+	</script>
 
 </body>
 </html>
