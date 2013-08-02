@@ -308,9 +308,12 @@
                             };
                         });
 						productList = self.products;
+						foldername = 'products';
+						alert('set foldername');
+						download_handler();
 						//writeToFileSystem('products');
                         //saveToStorage('products', self.products);
-                        self.attachTemplate();
+                        //self.attachTemplate();
                     });
                 },
             };
@@ -370,6 +373,12 @@
 		alert('trying to write to filesystem'+folder);
 		//alert('download handler'+issue);
 		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, onError_test_5);
+	};
+	
+	function download_handler(){
+		alert('download handler'+foldername);
+		//foldername = folder;
+		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, null);
 	};
 	
 	function onFSSuccess(fileSystem) {
