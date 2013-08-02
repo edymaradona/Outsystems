@@ -367,10 +367,11 @@
 		fileSystem.root.getDirectory("Android/data/"+applicationID+"",{create:true, exclusive: false}, function(appID){
 			appID.getDirectory(foldername, {create: true, exclusive: false}, madeDir, onError_test_2)
 		},onError_test_1);
+		alert('found file system');
 	};
 	
 	function madeDir(d){
-		//alert('found/made Directory'+'-'+foldername);
+		alert('found/made Directory'+'-'+foldername);
 		DATADIR = d;
 		var reader = DATADIR.createReader();
 		reader.readEntries(function(d){
@@ -380,7 +381,7 @@
 	};
 	
 	function gotFileEntries(fileEntries) {
-    //alert("The dir has "+fileEntries.length+" entries."+'-'+foldername);
+    alert("The dir has "+fileEntries.length+" entries."+'-'+foldername);
     
     if (localStorage.downloaded){
             var str = localStorage.downloaded;
@@ -400,16 +401,18 @@
 
 	// NBNBNBNBNBNNBNBNBNBN need to name the json file accordingle ? mimetype etc...
 	function gotFS_write(DIR) {
+		alert('write file...');
         DIR.getFile("product_list.html", {create: true, exclusive: false}, gotFileEntry_write, onError_test_1);
     };
 	
 	function gotFileEntry_write(fileEntry) {
+	alert('made file to write');
         fileEntry.createWriter(gotFileWriter, onError_test_1);
     };
 	
 	function gotFileWriter(writer) {
         writer.onwriteend = function(evt) {
-           
+           alert('writing actual file callback');
 		   // temporary solution
 		   App.init({
                 template: $('#cateory_template').html(),
