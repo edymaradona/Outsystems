@@ -248,7 +248,7 @@
                 
                 attachTemplate: function(){
                     var template = Handlebars.compile( this.template );
-                    var html = template( this.categories );
+                    var html = template( this.products );
                     this.container.html( html );
                 },
                 
@@ -284,8 +284,8 @@
                 },
                 
                 fetchStore: function (){
-                    this.categories = checkStorage('categories');
-                    if (!this.categories){
+                    this.products = checkStorage('categories');
+                    if (!this.products){
                         this.fetch();
                     }else{
                         console.log('fetched from store');
@@ -306,7 +306,7 @@
                             };
                         });
 						productList = self.products;
-						writeToFileSystem('products')
+						writeToFileSystem('products');
                         //saveToStorage('products', self.products);
                         self.attachTemplate();
                     });
