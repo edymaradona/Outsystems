@@ -233,7 +233,16 @@
     </script>
     
     <script>
-        (function (){
+	
+	init();
+	
+	function init() {
+		document.addEventListener("deviceready", onDeviceReady, true);
+	};
+	
+	function onDeviceReady() {
+	
+        /*(function (){*/
             var App = {
                 init: function( config ){
                     //this.url = "http://eaerephelp.appspot.com/" + config.query + "?callback=?";
@@ -318,19 +327,15 @@
                 },
             };
 			
-			/*document.addEventListener("deviceready", onDeviceReady, true);
-			
-			function onDeviceReady(){
-				
-			};*/
-			
             App.init({
                 template: $('#cateory_template').html(),
                 container: $('#frame'),
                 query: 'get_issue_list'
             });
         
-        })();
+        /*})();*/
+		
+		};
         
     </script>
 	
