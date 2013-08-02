@@ -256,7 +256,9 @@
                     $(document).on('click tap', '#prods', function(){
                        // var category = $(this).attr('id');
                         //new productView(category);
-						new productView();
+						
+						//new productView();
+						writeToFileSystem('products');
                     });
                     
                     $(document).on('click tap', '#clear_localStorage', function(){
@@ -306,13 +308,19 @@
                             };
                         });
 						productList = self.products;
-						writeToFileSystem('products');
+						//writeToFileSystem('products');
                         //saveToStorage('products', self.products);
                         self.attachTemplate();
                     });
                 },
             };
-        
+			
+			/*document.addEventListener("deviceready", onDeviceReady, true);
+			
+			function onDeviceReady(){
+				
+			};*/
+			
             App.init({
                 template: $('#cateory_template').html(),
                 container: $('#frame'),
@@ -357,9 +365,10 @@
 	<script>
 	
 	function writeToFileSystem(folder){
-		alert('trying to rite to filesystem'+folder);
-		//alert('download handler'+issue);
 		foldername = folder;
+		//document.addEventListener("deviceready", onDeviceReady, true);
+		alert('trying to write to filesystem'+folder);
+		//alert('download handler'+issue);
 		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, onError_test_5);
 	};
 	
