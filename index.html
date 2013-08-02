@@ -1,43 +1,320 @@
-<!DOCTYPE html>
-
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+<head>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0"/>
+    <meta content='text/html;charset=UTF-8' http-equiv='content-type'>
+    
+</head>
+<body>
+    
+    <h1>Advanced Jquery Techniques... test</h1>
+        <div id="clear_localStorage">Clear Local Storage</div>
+        <br>
+        <div id="sync">Sync</div>
+        <br>
 		
-        <title>Hybrid App made easy</title>
-		<script type="text/javascript" charset="utf-8">
-			var serverName = "emile.esterhuizen.s5.tryoutsystems.com";
-			var appName = "MobileSale";
-			//var targetLink = "http://" + serverName + "/" + appName + '?isCordova=True';
-            var targetLink = "http://50.22.164.226/CatalogueIntegration/ProductsList.aspx";
-			
-			/* When this function is called, PhoneGap has been initialized and is ready to roll */
-			function onDeviceReady() {
-			    var networkState = navigator.network.connection.type;
-	
-			    if((networkState == Connection.NONE) || (networkState == Connection.UNKNOWN)){
-			        navigator.notification.activityStop();
-			        navigator.notification.confirm(
-			            'Please turn on 3G or Wifi and retry.',  // message
-			            onDeviceReady,    // callback to invoke when retry is pressed
-			            'Network Unavailable!',            // title
-			            'Retry'          // button Label
-			        );                    
-			    } else {
-			        window.location = targetLink;
-			    }
-			}
-			
-			function onBodyLoad() {		
-			    document.addEventListener("deviceready", onDeviceReady, false);
-			}
-			
-		</script>
-	</head>
-    <body onload="onBodyLoad()">
-		<div>Loading application....</div>
-        <script type="text/javascript" src="cordova.js"></script>
-    </body>
+		<div id="prods">Prods</div>
+		<br>
+
+        <div id="quote">Get Quote</div>
+    
+    <div id="frame">
+        
+    </div>
+    
+    
+    <script src="libs/jquery-1.8.2.min.js"></script>
+    <script src="libs/handlebars.js"></script>
+    
+    <!-- Templates -->
+        <!-- Categories -->
+    <script id="cateory_template" type="text/x-handlebars-template">
+        <h3>Categories</h3>
+        <ul class="categories">
+            {{#each this}}
+                <li id="{{category}}" class="category_name">
+                    {{product.productName}}
+                </li>
+            {{/each}}
+        </ul>
+    </script>
+    
+        <!-- Products -->
+    <script id="product_template" type="text/x-handlebars-template">
+        <h3>Products</h3>
+        <ul class="products">
+            {{#each this}}
+                <li id="{{itemcode}}" class="product_name">
+                    <span class="itemcode">{{itemcode}}</span>  Price: R<span class="price">{{price}}</span>
+                    <br>
+                    {{description}}
+                    <br>
+                    In Stock: {{inventory}}
+                    <br>
+                    <div class="add_product">Add to Quote</div>
+                </li>
+            {{/each}}
+        </ul>
+    </script>
+    
+        <!-- Quote -->
+    <script id="quote_template" type="text/x-handlebars-template">
+        <h3>Quote</h3>
+        <ul class="current_quote">
+            {{#each this}}
+                <li class="quote_item">
+                    {{this.itemcode}} -- R{{this.price}}
+                </li>
+            {{/each}}
+        </ul>
+    </script>
+    
+    <script>
+        var syncAll = function (){
+            this.init = function(){
+                this.categoryUrl = 'http://eaerephelp.appspot.com/get_issue_list?callback=?';
+                this.productURl = 'http://eaerephelp.appspot.com/getfilelist/';
+                this.syncCategories();
+            };
+            
+            this.syncCategories = function(){
+                $.getJSON(this.categoryUrl, function (data){
+                    self.categories = $.map(data.category_list, function(cat){
+                        return{
+                            category: cat,
+                        };
+                    });
+                    saveToStorage('categories', self.categories);
+                    self.syncProducts();
+                    //self.attachTemplate();
+                });
+            };
+            
+            this.syncProducts = function(){
+                
+                function update(callbacks) {
+                    return $.Deferred(function(dfr) {
+                        setTimeout(function() {
+                            callbacks.success()
+                        }, 1000);
+                        dfr.resolve();
+                    }).promise();
+                }
+
+                function updateElements(deferreds) {
+                    for (var i = 0; i < 5; i++) {
+                        (function() {
+                            var index = i;
+                            deferreds.push(update({
+                                success: function() {
+                                    alert(index);
+                                }
+                            }));
+                        })();
+                    }
+                };
+
+                (function() {
+                    var deffereds = [];
+                    updateElements(deffereds);
+                    $.when.apply($, deffereds).then(function() {}, function() {});
+                })();
+              
+            };
+            
+            this.init();
+        };
+    </script>
+    
+    <script>
+        var productView = function (category){
+            
+            this.init = function(config){
+                //this.category = config.category;
+                this.template = config.template;
+                this.container = config.container;
+                this.url = "http://50.22.164.226/CatalogueIntegration/ProductsList.aspx"
+                //this.fetchStore();
+				this.fetch();
+            };
+            
+            this.fetchStore = function (){
+                    this.products = checkStorage('products');
+                    if (!this.products){
+                        this.fetch();
+                    }else{
+                        console.log('fetched products from store');
+                        this.attachTemplate();
+                    };
+                };
+            
+            this.fetch = function(){
+                var self = this;
+                $.getJSON(this.url, function (data){
+                    //var cat = self.category;
+                    self.products = $.map(data.Products, function(data){
+                        return data;
+                    });
+                    //saveToStorage('products-'+cat, self.products);
+                    console.log('products- saved')
+                    self.attachTemplate();
+                });
+            };
+            
+            this.attachTemplate = function(){
+                var template = Handlebars.compile( this.template );
+                var html = template( this.products );
+                this.container.html( html );
+            };
+            
+            this.init({
+                //category: category,
+                template: $('#product_template').html(),
+                container: $('#frame'),
+            });
+        }
+    </script>
+    
+    <script>
+        function checkStorage(storeName){
+            var strJSON = localStorage.getItem(storeName);
+            var resultJSON = JSON.parse(strJSON);
+            return resultJSON
+        };
+    </script>
+    
+    <script>
+        function saveToStorage(storeName, json){
+            var strJSON = JSON.stringify(json);
+            localStorage.setItem(storeName, strJSON);
+            return true
+        };
+    </script>
+    
+    <script>
+        function saveQuote(itemcode, price){
+            var productObj = {};
+            productObj['itemcode'] = itemcode;
+            productObj['price'] = price;
+            
+            console.log('product object: '+productObj);
+            
+            var productObjJSON = JSON.stringify(productObj);
+            
+            console.log('product object string: '+productObjJSON);
+            
+            if (localStorage.getItem('quoteData')){
+                var quoteJSON = JSON.parse(localStorage.getItem('quoteData'));
+                var quoteArray = quoteJSON['products'];
+                console.log('existing quoteArray'+quoteArray);
+            }else{
+                var quoteJSON = {};
+                var quoteArray = [];
+                quoteJSON['products'] = quoteArray;
+            };
+
+            quoteArray.push(productObjJSON);
+            console.log('quoteArray: '+quoteArray);
+            
+            quoteJSON['products'] = quoteArray;
+            var dataToStore = JSON.stringify(quoteJSON);
+            localStorage.setItem('quoteData', dataToStore);
+        };
+    </script>
+    
+    <script>
+        (function (){
+            var App = {
+                init: function( config ){
+                    //this.url = "http://eaerephelp.appspot.com/" + config.query + "?callback=?";
+					 this.url = "http://50.22.164.226/CatalogueIntegration/ProductsList.aspx?callback=?";
+                    
+                    this.template = config.template;
+                    this.container = config.container;
+                    this.registerEvents(config);
+                    //this.fetchStore();
+					this.fetch();
+                },
+                
+                attachTemplate: function(){
+                    var template = Handlebars.compile( this.template );
+                    var html = template( this.categories );
+                    this.container.html( html );
+                },
+                
+                registerEvents: function (config){
+                    $(document).on('click tap', '#prods', function(){
+                       // var category = $(this).attr('id');
+                        //new productView(category);
+						new productView();
+                    });
+                    
+                    $(document).on('click tap', '#clear_localStorage', function(){
+                        localStorage.clear();
+                        console.log('localStorage cleared');
+                    });
+                    
+                    $('body').on('click tap', '.add_product', function(){
+                        var itemcode = $(this).siblings('.itemcode').html();
+                        var price = $(this).siblings('.price').html();
+                        saveQuote(itemcode, price);
+                    });
+                    
+                    $(document).on('click tap', '#quote', function(){
+                        new quoteView();
+                    });
+                    
+                    //sync function seems to work, just check number of requests
+                    // NBNBNBNBNBNNB Sync function interferes with number of times a saveQuote fires
+                    //called the fetch() function instead of init(), so the same instance of App, but may need to do something to sync products
+                    $(document).on('click tap', '#sync', function(){
+                        syncAll();
+                        //App.fetch();
+                    });
+                },
+                
+                fetchStore: function (){
+                    this.categories = checkStorage('categories');
+                    if (!this.categories){
+                        this.fetch();
+                    }else{
+                        console.log('fetched from store');
+                        this.attachTemplate();
+                    };
+                },
+                
+                fetch: function (){
+                    
+                    var self = this;
+                    
+                    $.getJSON(this.url, function (data){
+						//console.log(data);
+                        self.categories = $.map(data.Products, function(p){
+							//console.log(p);
+                            return{
+                                product: p,
+                            };
+                        });
+                        saveToStorage('categories', self.categories);
+                        self.attachTemplate();
+                    });
+                },
+            };
+        
+            App.init({
+                template: $('#cateory_template').html(),
+                container: $('#frame'),
+                query: 'get_issue_list'
+            });
+        
+        })();
+        
+    </script>
+
+</body>
 </html>
+
+<!-- 
+    Will need to build in offline capability
+    Need to build in a separate Sync handler that gets and stores the fetched JSON
+-->
+
