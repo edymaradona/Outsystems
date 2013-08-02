@@ -357,9 +357,10 @@
 	<script>
 	
 	function writeToFileSystem(folder){
+		alert('trying to rite to filesystem'+folder);
 		//alert('download handler'+issue);
 		foldername = folder;
-		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, null);
+		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFSSuccess, onError_test_5);
 	};
 	
 	function onFSSuccess(fileSystem) {
